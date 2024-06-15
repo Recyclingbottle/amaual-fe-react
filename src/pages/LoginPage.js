@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import axios from "axios";
 import styles from "./LoginPage.module.css";
+import { setUser } from "../store/userSlice";
 
 const LoginPage = (props) => {
   const [email, setEmail] = useState("");
@@ -10,7 +12,11 @@ const LoginPage = (props) => {
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [isPasswordValid, setIsPasswordValid] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
+  const goSignUp = () => {
+    navigate("/signup");
+  };
   // 이메일 입력 시 유효성 검사하는 함수
   const emailValidate = (email) => {
     // 이메일 input 이 입력될 때 마다 실행
@@ -68,10 +74,8 @@ const LoginPage = (props) => {
   }, [password, email, isEmailValid]);
 
   // 로그인 form 제출 시 서버와 통신하는 함수
+  // 로그인 form 제출 시 서버와 통신하는 함수
   const Login = async (e) => {
-    //서버와 통신하는 부분
-    // 로그인 API 통신, props 로 받은 setIsLoggedIn 를 호출하여 state를 true 로 변경해주어야함
-    // 성공 시, "/" 로 페이지 이동 시켜주어야함
     e.preventDefault();
     const apiUrl = process.env.REACT_APP_API_URL;
     try {
@@ -85,22 +89,26 @@ const LoginPage = (props) => {
           headers: {
             "Content-Type": "application/json",
           },
+          withCredentials: true, // 쿠키를 포함하도록 설정
         }
       );
+
       if (response.status === 200) {
-        props.setIsLoggedIn(true);
+        const { email, nickname, id, profile_image } = response.data.user;
+        dispatch(
+          setUser({ email, nickname, userId: id, profileImage: profile_image })
+        );
         navigate("/");
       }
     } catch (error) {
       if (error.response) {
-        setHelperText(error.response.data.message || "로그인에 실패했습니다.");
-        console.error("로그인 실패:", error.response.data);
+        alert("이메일 & 비밀번호가 틀렸습니다.");
       } else {
-        setHelperText("로그인 중 오류가 발생했습니다.");
-        console.error("로그인 중 오류 발생:", error);
+        alert("서버 오류가 발생했습니다.");
       }
     }
   };
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.loginContainer}>
@@ -140,7 +148,9 @@ const LoginPage = (props) => {
             로그인
           </button>
         </form>
-        <p className={styles.signupLink}>회원가입</p>
+        <p className={styles.signupLink} onClick={goSignUp}>
+          회원가입
+        </p>
       </div>
     </div>
   );

@@ -1,0 +1,115 @@
+.pageContainer {
+  width: 100%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Pretendard", sans-serif;
+}
+.contentContainer {
+  width: 600px;
+  height: auto;
+  position: relative;
+}
+.welcomeMessage {
+  margin-top: 20px;
+  display: block;
+  font-size: 24px;
+  font-weight: 400;
+  text-align: center;
+  margin: 40px;
+}
+.welcomeMessage span {
+  font-weight: 700;
+}
+.postsContainer {
+  display: flex;
+  flex-direction: column;
+}
+.buttonRightAlign {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+.postCreateBtn {
+  width: 138px;
+  height: 39px;
+  background-color: #aca0eb;
+  color: #ffffff;
+  border: 0;
+  border-radius: 15px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.postCreateBtn:hover {
+  background-color: #7f6aee;
+}
+
+.postCard {
+  width: 600px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  margin: 16px 0;
+  padding: 16px;
+  transition: box-shadow 0.3s;
+}
+.postCard:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+.postMeta {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  color: black;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.views {
+  margin-left: 0px;
+  width: 90px;
+}
+.postDate {
+  margin-left: 200px;
+}
+.likes {
+  width: 70px;
+}
+.comments {
+  width: 65px;
+  margin-left: 5px;
+}
+
+.postTitle {
+  margin: 0;
+  font-weight: 600;
+  font-size: 18px;
+  color: #333333;
+}
+
+.authorInfo {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.authorProfilePicture {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+}
+
+.authorName {
+  font-weight: 500;
+}
+
+.postCard:hover .authorName {
+  text-decoration: underline;
+}

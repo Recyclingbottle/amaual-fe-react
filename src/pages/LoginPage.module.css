@@ -1,0 +1,63 @@
+.pageContainer {
+  width: 100%;
+  height: 976px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Pretendard", sans-serif;
+}
+
+.pageHeader {
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.signupLink {
+  margin-top: 15px;
+  color: black;
+  font-weight: 400;
+  text-align: center;
+  width: 100%;
+  cursor: pointer;
+}
+.helperText {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.loginForm {
+  width: 367px;
+  height: auto;
+  font-weight: 700;
+}
+
+.formGroup input {
+  width: 355px;
+  height: 33px;
+  border-radius: 5px;
+  border: 1px solid black;
+  font-size: 14px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+.formGroup label {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.loginButton {
+  border: 0;
+  width: 335px;
+  height: 33px;
+  border-radius: 4px;
+  color: #fff;
+  background-color: #aca0eb;
+  margin: 10px 0 0 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

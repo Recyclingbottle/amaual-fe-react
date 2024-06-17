@@ -32,6 +32,15 @@ const Header = () => {
     dispatch(clearUser());
     navigate("/login");
   };
+
+  const handleEditProfile = () => {
+    navigate("/edit-profile");
+  };
+
+  const handleChangePassword = () => {
+    navigate("/change-password");
+  };
+
   // 지금 어떤 페이지인지 알기 위해서
   const currentPath = location.pathname;
 
@@ -57,8 +66,12 @@ const Header = () => {
             <ul
               className={`${styles.menu} ${menuVisible ? "" : styles.hidden}`}
             >
-              <li className={styles.menuItem}>회원정보수정</li>
-              <li className={styles.menuItem}>비밀번호수정</li>
+              <li className={styles.menuItem} onClick={handleEditProfile}>
+                회원정보수정
+              </li>
+              <li className={styles.menuItem} onClick={handleChangePassword}>
+                비밀번호수정
+              </li>
               <li className={styles.menuItem} onClick={handleLogout}>
                 로그아웃
               </li>

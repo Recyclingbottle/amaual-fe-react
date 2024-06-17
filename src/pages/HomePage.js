@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 import axios from "axios";
 import styles from "./HomePage.module.css";
 
 const HomePage = () => {
-  const user = useSelector((state) => state.user);
   const apiUrl = process.env.REACT_APP_API_URL;
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
@@ -47,7 +45,7 @@ const HomePage = () => {
         <div className={styles.postMeta}>
           <span className={styles.likes}>좋아요 {formatCount(post.likes)}</span>
           <span className={styles.comments}>
-            댓글수 {formatCount(post.commentsCount)}
+            댓글 {formatCount(post.commentsCount)}
           </span>
           <span className={styles.views}>조회수 {formatCount(post.views)}</span>
           <time className={styles.postDate}>{formatDate(post.date)}</time>

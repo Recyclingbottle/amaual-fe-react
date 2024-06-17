@@ -1,11 +1,17 @@
 import React, { useState, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import styles from "./EditProfilePage.module.css";
 import axios from "axios";
+import styles from "./EditProfilePage.module.css";
+import FormGroup from "../components/FormGroup";
+import Button from "../components/Button";
+import Modal from "../components/Modal";
+import withAuth from "../hocs/withAuth";
+import { setUser } from "../store/userSlice";
 
 const EditProfilePage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // Redux 상태에서 사용자 정보 가져오기
   const user = useSelector((state) => state.user);
@@ -78,20 +84,19 @@ const EditProfilePage = () => {
             },
           }
         );
-
         if (uploadResponse.status === 200) {
           uploadedImageName = uploadResponse.data.filename;
         } else {
-          setHelperText("프로필 사진 업로드에 실패했습니다.");
+          setHelperText("이미지 업로드에 실패했습니다.");
           return;
         }
       } catch (error) {
-        setHelperText("프로필 사진 업로드 중 오류가 발생했습니다.");
+        setHelperText("이미지 업로드 중 오류가 발생했습니다.");
         return;
       }
     }
 
-    const updatePayload = {
+    const userPayload = {
       nickname,
       profile_image: uploadedImageName,
     };
@@ -99,7 +104,7 @@ const EditProfilePage = () => {
     try {
       const response = await axios.patch(
         `${apiUrl}/users/${user.userId}`,
-        updatePayload,
+        userPayload,
         {
           withCredentials: true,
           headers: {
@@ -109,12 +114,20 @@ const EditProfilePage = () => {
       );
 
       if (response.status === 200) {
+        dispatch(
+          setUser({
+            email: user.email,
+            nickname,
+            userId: user.userId,
+            profileImage: uploadedImageName,
+          })
+        );
         navigate("/");
       } else {
-        setHelperText("사용자 정보 수정에 실패했습니다.");
+        setHelperText("프로필 수정에 실패했습니다.");
       }
     } catch (error) {
-      setHelperText("사용자 정보 수정 중 오류가 발생했습니다.");
+      setHelperText("프로필 수정 중 오류가 발생했습니다.");
     }
   };
 
@@ -127,65 +140,51 @@ const EditProfilePage = () => {
   };
 
   const handleConfirm = async () => {
-    console.log("회원탈퇴 확인 누름");
-
     try {
       const response = await axios.delete(`${apiUrl}/users/${user.userId}`, {
         withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
       if (response.status === 200) {
-        // 성공적으로 삭제되었을 때 처리
-        setModalOpen(false);
-        navigate("/login");
+        // 로그아웃 처리 등 추가 작업 필요
+        navigate("/signup");
       } else {
-        // 삭제 실패 시 처리
-        setHelperText("회원탈퇴에 실패했습니다.");
+        console.error("Failed to delete user");
       }
     } catch (error) {
-      // 오류 처리
-      setHelperText("회원탈퇴 중 오류가 발생했습니다.");
+      console.error("Error deleting user", error);
     }
   };
 
   return (
     <div className={styles.pageContainer}>
-      <div className={styles.profileEditContainer}>
-        <p className={styles.pageHeader}>회원 정보 수정</p>
-        <div className={styles.uploadContainer}>
-          <label className={styles.profileLabel}>프로필 사진</label>
-          <div className={styles.profileAddBox}>
-            <img
-              src={profileImage}
-              alt="Profile"
+      <div className={styles.editProfileContainer}>
+        <h2>프로필 수정</h2>
+        <form className={styles.editProfileForm}>
+          <FormGroup label="프로필 사진" helperText="">
+            <div
+              className={styles.profileImageContainer}
               onClick={handleProfileImageClick}
-              style={{
-                width: "149px",
-                height: "149px",
-                borderRadius: "100%",
-                cursor: "pointer",
-              }}
-            />
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              style={{ display: "none" }}
-              className={styles.profileImageInput}
-            />
-          </div>
-        </div>
-        <form>
-          <div className={styles.formGroup}>
-            <label className={styles.formGroupLabel} htmlFor="email">
-              이메일
-            </label>
-            <p id="email">{user.email}</p>
-          </div>
-          <div className={styles.formGroup}>
-            <label className={styles.formGroupLabel} htmlFor="nickname">
-              닉네임
-            </label>
+            >
+              <img
+                src={profileImage}
+                alt="프로필 이미지"
+                className={styles.profileImage}
+              />
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className={styles.fileInput}
+                style={{ display: "none" }}
+              />
+            </div>
+          </FormGroup>
+          <FormGroup label="닉네임" helperText={helperText}>
             <input
               className={styles.formGroupInput}
               type="text"
@@ -195,59 +194,37 @@ const EditProfilePage = () => {
               onChange={handleNicknameChange}
               required
             />
-          </div>
-          <p className={styles.helperText}>{helperText}</p>
+          </FormGroup>
         </form>
         <div className={styles.btnContainer}>
-          <button
+          <Button
             className={styles.EditButton}
             type="button"
             style={{ marginTop: 5 }}
             onClick={handleSubmit}
           >
             수정하기
-          </button>
+          </Button>
           <p className={styles.goToLogin} onClick={handleDelete}>
             회원탈퇴
           </p>
         </div>
         <div className={styles.backBtnBox}>
-          <button className={styles.backBtn} onClick={() => navigate("/")}>
+          <Button className={styles.backBtn} onClick={() => navigate("/")}>
             수정완료
-          </button>
+          </Button>
         </div>
       </div>
 
-      {isModalOpen && (
-        <div className={styles.modal} style={{ display: "block" }}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>회원탈퇴 하시겠습니까?</h2>
-            </div>
-            <div className={styles.modalBody}>
-              <p className={styles.modalText}>
-                작성된 게시글과 댓글은 삭제됩니다.
-              </p>
-            </div>
-            <div className={styles.modalFooter}>
-              <button
-                className={`${styles.btn} ${styles.cancel}`}
-                onClick={handleCancel}
-              >
-                취소
-              </button>
-              <button
-                className={`${styles.btn} ${styles.confirm}`}
-                onClick={handleConfirm}
-              >
-                확인
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={isModalOpen}
+        title="회원탈퇴 하시겠습니까?"
+        content="작성된 게시글과 댓글은 삭제됩니다."
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+      />
     </div>
   );
 };
 
-export default EditProfilePage;
+export default withAuth(EditProfilePage);

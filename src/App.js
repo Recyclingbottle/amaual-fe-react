@@ -5,8 +5,8 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { useSelector } from "react-redux";
 import React from "react";
+import { useSelector } from "react-redux";
 
 import Header from "./components/Header";
 import HomePage from "./pages/HomePage";
@@ -17,46 +17,44 @@ import PostDetailPage from "./pages/PostDetailPage";
 import EditPostPage from "./pages/EditPostPage";
 import EditProfilePage from "./pages/EditProfilePage";
 import ChangePasswordPage from "./pages/ChangePasswordPage";
+import withAuth from "./hocs/withAuth";
+
+const AuthenticatedCreatePostPage = withAuth(CreatePostPage);
+const AuthenticatedPostDetailPage = withAuth(PostDetailPage);
+const AuthenticatedEditPostPage = withAuth(EditPostPage);
+const AuthenticatedEditProfilePage = withAuth(EditProfilePage);
+const AuthenticatedChangePasswordPage = withAuth(ChangePasswordPage);
 
 const App = () => {
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
+
   return (
     <Router>
       <div>
-        <Header isLoggedIn={isLoggedIn}></Header>
+        <Header isLoggedIn={isLoggedIn} />
         <Routes>
-          <Route
-            path="/"
-            element={isLoggedIn ? <HomePage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/login"
-            element={isLoggedIn ? <Navigate to="/" /> : <LoginPage />}
-          />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route
             path="/create-post"
-            element={isLoggedIn ? <CreatePostPage /> : <Navigate to="/login" />}
+            element={<AuthenticatedCreatePostPage />}
           />
           <Route
             path="/posts/:postId"
-            element={isLoggedIn ? <PostDetailPage /> : <Navigate to="/login" />}
+            element={<AuthenticatedPostDetailPage />}
           />
           <Route
             path="/edit-post/:postId"
-            element={isLoggedIn ? <EditPostPage /> : <Navigate to="/login" />}
+            element={<AuthenticatedEditPostPage />}
           />
           <Route
             path="/edit-profile"
-            element={
-              isLoggedIn ? <EditProfilePage /> : <Navigate to="/login" />
-            }
+            element={<AuthenticatedEditProfilePage />}
           />
           <Route
             path="/change-password"
-            element={
-              isLoggedIn ? <ChangePasswordPage /> : <Navigate to="/login" />
-            }
+            element={<AuthenticatedChangePasswordPage />}
           />
         </Routes>
       </div>

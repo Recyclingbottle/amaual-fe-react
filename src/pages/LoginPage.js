@@ -1,159 +1,194 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import axios from "axios";
-import styles from "./LoginPage.module.css";
-import { setUser } from "../store/userSlice";
+import styles from "./SignUpPage.module.css";
+import addIcon from "../assets/add-icon.png";
+import FormGroup from "../components/FormGroup";
+import Button from "../components/Button";
+import validateAuth from "../utils/validateAuth";
 
-const LoginPage = (props) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [helperText, setHelperText] = useState("");
-  const [isEmailValid, setIsEmailValid] = useState(false);
-  const [isPasswordValid, setIsPasswordValid] = useState(false);
+const SignUpPage = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const apiUrl = process.env.REACT_APP_API_URL;
+  const fileInputRef = useRef(null);
+  const [values, setValues] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    nickname: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [profileImage, setProfileImage] = useState(null);
+  const [profileImageHelperText, setProfileImageHelperText] =
+    useState("*프로필 사진을 등록해주세요.");
+  const [newProfileImageFile, setNewProfileImageFile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const goSignUp = () => {
-    navigate("/signup");
+  const handleChange = async (event) => {
+    const { name, value } = event.target;
+    setValues((prevValues) => ({
+      ...prevValues,
+      [name]: value,
+    }));
+
+    // 유효성 검사 결과 업데이트
+    const validationErrors = await validateAuth(
+      { ...values, [name]: value },
+      true
+    );
+    setErrors(validationErrors);
   };
-  // 이메일 입력 시 유효성 검사하는 함수
-  const emailValidate = (email) => {
-    // 이메일 input 이 입력될 때 마다 실행
-    // 이메일 형식이 너무 짧은 경우, 입력하지 않은 경우, 유효하지 않은 경우 : helpertext 를 "*올바른 이메일 주소 형식을 입력해주세요. (예:example@example.com)"
-    // 구글에 "이메일 검사 레거시" 검색하면 나옴
-    const regex = /\S+@\S+\.\S+/;
-    if (!email) {
-      setHelperText(
-        "*올바른 이메일 주소 형식을 입력해주세요. (예:example@example.com)"
-      );
-      setIsEmailValid(false);
-    } else if (!regex.test(email)) {
-      setHelperText(
-        "*올바른 이메일 주소 형식을 입력해주세요. (예:example@example.com)"
-      );
-      setIsEmailValid(false);
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setNewProfileImageFile(file);
+      setProfileImage(URL.createObjectURL(file));
+      setProfileImageHelperText("");
     } else {
-      setHelperText("");
-      setIsEmailValid(true);
+      setNewProfileImageFile(null);
+      setProfileImage(null);
+      setProfileImageHelperText("*프로필 사진을 등록해주세요.");
     }
   };
 
-  // 비밀번호 입력 시 유효성 검사하는 함수
-  const passwordValidate = (password) => {
-    // 비밀번호 비었을겨 경우 helpertext 를 "비밀번호를 입력해주세요."
-    // 8자 이하일 경우 helpertext 를 "비밀번호가 너무 짧습니다."
-    if (!password) {
-      setHelperText("비밀번호를 입력해주세요.");
-      setIsPasswordValid(false);
-    } else if (password.length <= 8) {
-      setHelperText("비밀번호가 너무 짧습니다.");
-      setIsPasswordValid(false);
-    } else {
-      setHelperText("");
-      setIsPasswordValid(true);
-    }
+  const handleProfileClick = () => {
+    fileInputRef.current.click();
   };
 
-  useEffect(() => {
-    //비동기 문제를 해결하는 방법 중 가장 많이 씀
-    //여기에 적절한 유효성 검사 함수 호출 하면됨.
-    emailValidate(email);
-  }, [email]);
-  // useEffect(() => {
-  //   //비동기 문제를 해결하는 방법 중 가장 많이 씀
-  //   //여기에 적절한 유효성 검사 함수 호출 하면됨.
-  //   passwordValidate(password);
-  // }, [password]);
-  // 이메일 마운트 -> 패스워드 마운트 되기에 초기 상태가
-  // "비밀번호 입력해주세요" 임 이를 방지하도록 변경
-  useEffect(() => {
-    if (email && isEmailValid) {
-      passwordValidate(password);
-    }
-  }, [password, email, isEmailValid]);
+  const handleSignUp = async (event) => {
+    event.preventDefault();
+    const validationErrors = await validateAuth(values, true);
+    setErrors(validationErrors);
 
-  // 로그인 form 제출 시 서버와 통신하는 함수
-  // 로그인 form 제출 시 서버와 통신하는 함수
-  const Login = async (e) => {
-    e.preventDefault();
-    const apiUrl = process.env.REACT_APP_API_URL;
+    const isValid = Object.keys(validationErrors).length === 0;
+
+    if (!isValid || !profileImage) {
+      if (!profileImage) {
+        setProfileImageHelperText("*프로필 사진을 등록해주세요.");
+      }
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      const response = await axios.post(
-        `${apiUrl}/users/login`,
-        {
-          email: email,
-          password: password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true, // 쿠키를 포함하도록 설정
-        }
-      );
+      const formData = new FormData();
+      formData.append("email", values.email);
+      formData.append("password", values.password);
+      formData.append("nickname", values.nickname);
+      formData.append("profile_image", newProfileImageFile);
 
-      if (response.status === 200) {
-        const { email, nickname, id, profile_image } = response.data.user;
-        dispatch(
-          setUser({ email, nickname, userId: id, profileImage: profile_image })
-        );
-        navigate("/");
+      const response = await axios.post(`${apiUrl}/users`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (response.status === 201) {
+        alert("회원가입이 완료되었습니다.");
+        navigate("/login");
       }
     } catch (error) {
-      if (error.response) {
-        alert("이메일 & 비밀번호가 틀렸습니다.");
-      } else {
-        alert("서버 오류가 발생했습니다.");
-      }
+      alert("회원가입 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className={styles.pageContainer}>
-      <div className={styles.loginContainer}>
-        <p className={styles.pageHeader}>로그인</p>
-        <form onSubmit={Login} className={styles.loginForm}>
-          <div className={styles.formGroup}>
-            <label htmlFor="email">이메일</label>
+      <div className={styles.signUpContainer}>
+        <h2>회원가입</h2>
+        <form onSubmit={handleSignUp}>
+          <FormGroup label="프로필 사진" helperText={profileImageHelperText}>
+            <div
+              className={styles.profileImageContainer}
+              onClick={handleProfileClick}
+            >
+              {profileImage ? (
+                <img
+                  src={profileImage}
+                  alt="프로필 이미지"
+                  className={styles.profileImage}
+                />
+              ) : (
+                <img
+                  src={addIcon}
+                  alt="추가 아이콘"
+                  className={styles.addIcon}
+                />
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className={styles.fileInput}
+                style={{ display: "none" }}
+              />
+            </div>
+          </FormGroup>
+          <FormGroup label="이메일*">
             <input
               type="email"
               id="email"
               name="email"
-              className={styles.formGroupInput}
-              onChange={(e) => setEmail(e.target.value)}
-            ></input>
-          </div>
-          <div className={styles.formGroup}>
-            <label htmlFor="password">비밀번호</label>
+              value={values.email}
+              onChange={handleChange}
+              required
+            />
+            {errors.email && (
+              <p className={styles.helperText}>{errors.email}</p>
+            )}
+          </FormGroup>
+          <FormGroup label="비밀번호*">
             <input
               type="password"
               id="password"
               name="password"
-              className={styles.formGroupInput}
-              onChange={(e) => setPassword(e.target.value)}
-            ></input>
-          </div>
-          <p className={styles.helperText}>{helperText}</p>
-          {/* 유효성 검사 통과 시 활성화 */}
-          <button
-            className={styles.loginButton}
-            type="submit"
-            disabled={!isEmailValid || !isPasswordValid}
-            style={{
-              backgroundColor:
-                isEmailValid && isPasswordValid ? "#7E6AEE" : "#ACA0EB",
-            }}
-          >
-            로그인
-          </button>
+              value={values.password}
+              onChange={handleChange}
+              required
+            />
+            {errors.password && (
+              <p className={styles.helperText}>{errors.password}</p>
+            )}
+          </FormGroup>
+          <FormGroup label="비밀번호 확인*">
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={values.confirmPassword}
+              onChange={handleChange}
+              required
+            />
+            {errors.confirmPassword && (
+              <p className={styles.helperText}>{errors.confirmPassword}</p>
+            )}
+          </FormGroup>
+          <FormGroup label="닉네임*">
+            <input
+              type="text"
+              id="nickname"
+              name="nickname"
+              value={values.nickname}
+              onChange={handleChange}
+              required
+            />
+            {errors.nickname && (
+              <p className={styles.helperText}>{errors.nickname}</p>
+            )}
+          </FormGroup>
+          <Button type="submit" disabled={isSubmitting}>
+            회원가입
+          </Button>
         </form>
-        <p className={styles.signupLink} onClick={goSignUp}>
-          회원가입
+        <p className={styles.goLogin} onClick={() => navigate("/login")}>
+          로그인 하러가기
         </p>
       </div>
     </div>
   );
 };
 
-export default LoginPage;
+export default SignUpPage;

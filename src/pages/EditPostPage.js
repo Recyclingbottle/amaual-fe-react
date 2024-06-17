@@ -1,23 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useSelector } from "react-redux";
 import styles from "./EditPostPage.module.css";
+import FormGroup from "../components/FormGroup";
+import Button from "../components/Button";
+import useFormValidation from "../hooks/useFormValidation";
+import validatePost from "../utils/validatePost";
+import withAuth from "../hocs/withAuth";
 
 const EditPostPage = () => {
   const { postId } = useParams();
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_URL;
-
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [imageFile, setImageFile] = useState(null);
   const [existingImage, setExistingImage] = useState("");
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [helperText, setHelperText] =
-    useState("*제목, 내용을 모두 작성해주세요");
+  const [imageFile, setImageFile] = useState(null);
+  const [helperText, setHelperText] = useState("");
 
-  const user = useSelector((state) => state.user);
+  const {
+    handleChange,
+    handleSubmit,
+    values,
+    setValues,
+    errors,
+    isSubmitting,
+  } = useFormValidation({ title: "", content: "" }, validatePost);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -26,8 +32,8 @@ const EditPostPage = () => {
           withCredentials: true,
         });
         const post = response.data;
-        setTitle(post.title);
-        setContent(post.content);
+        console.log(post);
+        setValues({ title: post.title, content: post.content });
         setExistingImage(`${apiUrl}/images/posts/${post.image}`);
       } catch (error) {
         console.error("Failed to fetch post", error);
@@ -36,26 +42,7 @@ const EditPostPage = () => {
     };
 
     fetchPost();
-  }, [postId, apiUrl]);
-
-  useEffect(() => {
-    if (title && content) {
-      setIsFormValid(true);
-      setHelperText("");
-    } else {
-      setIsFormValid(false);
-    }
-  }, [title, content]);
-
-  const handleTitleChange = (e) => {
-    if (e.target.value.length <= 26) {
-      setTitle(e.target.value);
-    }
-  };
-
-  const handleContentChange = (e) => {
-    setContent(e.target.value);
-  };
+  }, [postId, apiUrl, setValues]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -70,10 +57,14 @@ const EditPostPage = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleUpdatePost = async (e) => {
     e.preventDefault();
 
-    let uploadedImageName = existingImage;
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
+    let uploadedImageName = existingImage.split("/").pop(); // 기존 이미지 이름 추출
 
     if (imageFile) {
       const formData = new FormData();
@@ -85,15 +76,11 @@ const EditPostPage = () => {
           formData,
           {
             withCredentials: true,
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
+            headers: { "Content-Type": "multipart/form-data" },
           }
         );
-        console.log(uploadResponse);
-        if (uploadResponse.data.message === "File uploaded successfully") {
+        if (uploadResponse.status === 200) {
           uploadedImageName = uploadResponse.data.filename;
-          console.log(uploadedImageName);
         } else {
           setHelperText("이미지 업로드에 실패했습니다.");
           return;
@@ -105,9 +92,9 @@ const EditPostPage = () => {
     }
 
     const postPayload = {
-      title,
-      content,
-      uploadedImageName,
+      title: values.title,
+      content: values.content,
+      post_image: uploadedImageName,
     };
 
     try {
@@ -116,11 +103,10 @@ const EditPostPage = () => {
         postPayload,
         {
           withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         }
       );
+
       if (response.status === 200) {
         navigate(`/posts/${postId}`);
       } else {
@@ -139,38 +125,31 @@ const EditPostPage = () => {
         className={styles.formSection}
         onSubmit={handleSubmit}
       >
-        <div className={styles.formGroup}>
-          <label htmlFor="post-title" className={styles.formLabel}>
-            제목*
-          </label>
+        <FormGroup label="제목*" helperText={errors.title}>
           <input
             type="text"
             id="post-title"
+            name="title"
             className={styles.formInput}
-            value={title}
-            onChange={handleTitleChange}
+            value={values.title}
+            onChange={handleChange}
           />
-        </div>
-        <div className={styles.formGroup}>
-          <label htmlFor="post-content" className={styles.formLabel}>
-            내용*
-          </label>
+        </FormGroup>
+        <FormGroup label="내용*" helperText={errors.content}>
           <textarea
             id="post-content"
+            name="content"
             className={styles.formTextarea}
             cols="30"
             rows="10"
-            value={content}
-            onChange={handleContentChange}
+            value={values.content}
+            onChange={handleChange}
           ></textarea>
-        </div>
+        </FormGroup>
         <p className={styles.helperText} id="create-helper">
           {helperText}
         </p>
-        <div className={styles.formGroup} style={{ marginTop: "5px" }}>
-          <label htmlFor="post-image" className={styles.formLabel}>
-            이미지
-          </label>
+        <FormGroup label="이미지" helperText="">
           {existingImage && (
             <div className={styles.existingImageContainer}>
               <img
@@ -186,20 +165,19 @@ const EditPostPage = () => {
             className={styles.formFileInput}
             onChange={handleFileChange}
           />
-        </div>
+        </FormGroup>
         <div className={styles.submitLink}>
-          <button
+          <Button
             type="submit"
-            className={styles.submitButton}
-            style={{ backgroundColor: isFormValid ? "#7F6AEE" : "#ACAOEB" }}
-            disabled={!isFormValid}
+            disabled={isSubmitting}
+            onClick={handleUpdatePost}
           >
             완료
-          </button>
+          </Button>
         </div>
       </form>
     </div>
   );
 };
 
-export default EditPostPage;
+export default withAuth(EditPostPage);

@@ -3,6 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { format, parseISO } from "date-fns";
 import styles from "./PostDetailPage.module.css";
+import Modal from "../components/Modal";
+import Button from "../components/Button";
+import withAuth from "../hocs/withAuth";
 
 const PostDetailPage = () => {
   const { postId } = useParams();
@@ -11,7 +14,8 @@ const PostDetailPage = () => {
 
   const [post, setPost] = useState(null);
   const [commentText, setCommentText] = useState("");
-  const [isRegistering, setIsRegistering] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [comments, setComments] = useState([]);
   const [commentToDelete, setCommentToDelete] = useState(null);
@@ -76,8 +80,9 @@ const PostDetailPage = () => {
             withCredentials: true,
           }
         );
-        await fetchComments();
         setCommentToDelete(null);
+        setIsModalOpen(false);
+        await fetchComments();
       } else {
         await axios.delete(`${apiUrl}/posts/${postId}`, {
           withCredentials: true,
@@ -85,145 +90,92 @@ const PostDetailPage = () => {
         navigate("/");
       }
     } catch (error) {
-      console.error("Failed to delete", error);
-    } finally {
-      setIsModalOpen(false);
+      console.error("Failed to delete post or comment", error);
     }
   };
 
   const handleCommentSubmit = async () => {
-    try {
-      if (isRegistering) {
-        const response = await axios.post(
-          `${apiUrl}/posts/${postId}/comments`,
-          {
-            content: commentText,
-          },
-          { withCredentials: true }
-        );
-        if (response.status === 201) {
-          await fetchComments();
-          setCommentText("");
-        } else {
-          throw new Error("Failed to add comment");
-        }
-      } else {
+    if (!commentText.trim()) return;
+
+    if (isEditing) {
+      try {
         const response = await axios.patch(
-          `${apiUrl}/posts/${postId}/comments/${commentToDelete}`,
+          `${apiUrl}/posts/${postId}/comments/${editingCommentId}`,
+          { content: commentText },
           {
-            content: commentText,
-          },
-          { withCredentials: true }
+            withCredentials: true,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
         );
         if (response.status === 200) {
-          await fetchComments();
           setCommentText("");
-          setIsRegistering(true);
-          setCommentToDelete(null);
-        } else {
-          throw new Error("Failed to edit comment");
+          setIsEditing(false);
+          setEditingCommentId(null);
+          fetchComments();
         }
+      } catch (error) {
+        console.error("Failed to update comment", error);
       }
-    } catch (error) {
-      console.error("Failed to submit comment", error);
+    } else {
+      try {
+        const response = await axios.post(
+          `${apiUrl}/posts/${postId}/comments`,
+          { content: commentText },
+          {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (response.status === 201) {
+          setCommentText("");
+          fetchComments();
+        }
+      } catch (error) {
+        console.error("Failed to submit comment", error);
+      }
     }
   };
 
-  const handleEditComment = (comment) => {
-    setCommentText(comment.content);
-    setIsRegistering(false);
-    setCommentToDelete(comment.id);
-  };
-
   const handleCommentDeleteClick = (commentId) => {
-    setCommentToDelete(commentId);
     setIsModalOpen(true);
+    setCommentToDelete(commentId);
   };
 
-  if (!post) return <div>Loading...</div>;
+  const handleEditComment = (comment) => {
+    setIsEditing(true);
+    setCommentText(comment.content);
+    setEditingCommentId(comment.id);
+  };
 
   return (
-    <div className={styles.contentContainer}>
-      <div className={styles.titleContainer}>
-        <h2 className={styles.postTitle}>{post.title}</h2>
-        <div className={styles.postAuthor}>
-          <img
-            className={styles.postProfilePic}
-            src={`${apiUrl}/images/profile/${post.author_profile_image}`}
-            alt="프로필 이미지"
-          />
-          <p className={styles.authorName}>{post.author_nickname}</p>
-          <span className={styles.postDate}>{formatDate(post.created_at)}</span>
-          <div className={styles.postBtnContainer}>
-            <button className={styles.editPostBtn} onClick={gotoEditPost}>
-              수정
-            </button>
-            <button className={styles.deletePostBtn} onClick={handleDelete}>
-              삭제
-            </button>
-            {isModalOpen && (
-              <div className={styles.modal} style={{ display: "block" }}>
-                <div className={styles.modalContent}>
-                  <div className={styles.modalHeader}>
-                    <h2 className={styles.modalTitle}>
-                      {commentToDelete
-                        ? "댓글을 삭제하시겠습니까?"
-                        : "게시글을 삭제하시겠습니까?"}
-                    </h2>
-                  </div>
-                  <div className={styles.modalBody}>
-                    <p className={styles.modalText}>
-                      삭제한 {commentToDelete ? "댓글" : "게시글"}은 다시 복구
-                      할 수 없습니다.
-                    </p>
-                  </div>
-                  <div className={styles.modalFooter}>
-                    <button
-                      className={`${styles.btn} ${styles.cancel}`}
-                      onClick={handleCancel}
-                    >
-                      취소
-                    </button>
-                    <button
-                      className={`${styles.btn} ${styles.confirm}`}
-                      onClick={handleConfirm}
-                    >
-                      확인
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+    <div className={styles.pageContainer}>
+      {post && (
+        <div className={styles.postContent}>
+          <h2 className={styles.postTitle}>{post.title}</h2>
+          <div className={styles.postMeta}>
+            <span>작성자: {post.author_nickname}</span>
+            <span>작성일: {formatDate(post.created_at)}</span>
           </div>
-        </div>
-      </div>
-      <div className={styles.postContent}>
-        <div className={styles.imgBox}>
           {post.image && (
             <img
-              className={styles.postImage}
               src={`${apiUrl}/images/posts/${post.image}`}
               alt="게시글 이미지"
+              className={styles.postImage}
             />
           )}
+          <p className={styles.postBody}>{post.content}</p>
+          <Button className={styles.editButton} onClick={gotoEditPost}>
+            수정
+          </Button>
+          <Button className={styles.deleteButton} onClick={handleDelete}>
+            삭제
+          </Button>
         </div>
-        <p
-          className={styles.postText}
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
-        <div className={styles.postInteraction}>
-          <button className={styles.viewCountBtn}>
-            {post.view_count}
-            <br />
-            조회수
-          </button>
-          <button className={styles.commentCountBtn}>
-            {post.comment_count}
-            <br />
-            댓글
-          </button>
-        </div>
-      </div>
+      )}
       <div className={styles.postComments}>
         <textarea
           placeholder="댓글을 남겨주세요!"
@@ -232,12 +184,12 @@ const PostDetailPage = () => {
           onChange={(e) => setCommentText(e.target.value)}
         ></textarea>
         <div className={styles.commentsRegisterButtonContainer}>
-          <button
+          <Button
             className={styles.commentsRegisterButton}
             onClick={handleCommentSubmit}
           >
-            {isRegistering ? "댓글 등록" : "수정하기"}
-          </button>
+            {isEditing ? "수정하기" : "댓글 등록"}
+          </Button>
         </div>
       </div>
       {comments.map((comment) => (
@@ -256,20 +208,20 @@ const PostDetailPage = () => {
                 {formatDate(comment.created_at)}
               </span>
               <div className={styles.commentBtnContainer}>
-                <button
+                <Button
                   className={styles.editCommentBtn}
                   data-comment-id={comment.id}
                   onClick={() => handleEditComment(comment)}
                 >
                   수정
-                </button>
-                <button
+                </Button>
+                <Button
                   className={styles.deleteCommentBtn}
                   data-comment-id={comment.id}
                   onClick={() => handleCommentDeleteClick(comment.id)}
                 >
                   삭제
-                </button>
+                </Button>
               </div>
             </div>
             <div className={styles.commentBody}>
@@ -278,8 +230,15 @@ const PostDetailPage = () => {
           </div>
         </div>
       ))}
+      <Modal
+        isOpen={isModalOpen}
+        title="삭제 확인"
+        content="정말로 삭제하시겠습니까?"
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+      />
     </div>
   );
 };
 
-export default PostDetailPage;
+export default withAuth(PostDetailPage);

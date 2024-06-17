@@ -109,7 +109,7 @@ const LoginPage = () => {
           </Button>
         </form>
         <p className={styles.signupLink} onClick={() => navigate("/signup")}>
-          회원가입
+          회원가입 하러 가기
         </p>
       </div>
     </div>

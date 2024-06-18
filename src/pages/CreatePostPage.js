@@ -120,9 +120,13 @@ const CreatePostPage = () => {
           />
         </FormGroup>
         <div className={styles.submitLink}>
-          <Button type="submit" disabled={isSubmitting}>
+          <button
+            className={styles.submitButton}
+            type="submit"
+            disabled={isSubmitting}
+          >
             완료
-          </Button>
+          </button>
         </div>
       </form>
     </div>

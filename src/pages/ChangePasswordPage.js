@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
@@ -15,7 +15,15 @@ const ChangePasswordPage = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [helperText, setHelperText] = useState("");
+  const [helperText, setHelperText] = useState("비밀번호를 입력해주세요");
+
+  useEffect(() => {
+    if (newPassword !== confirmPassword) {
+      setHelperText("새 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+    } else {
+      setHelperText("");
+    }
+  }, [newPassword, confirmPassword]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -50,14 +58,15 @@ const ChangePasswordPage = () => {
 
   return (
     <div className={styles.pageContainer}>
-      <div className={styles.changePasswordContainer}>
-        <h2>비밀번호 변경</h2>
+      <div className={styles.changePWContainer}>
+        <h2 className={styles.pageHeader}>비밀번호 변경</h2>
         <form className={styles.changePasswordForm} onSubmit={handleSubmit}>
           <FormGroup label="새 비밀번호" helperText="">
             <input
               type="password"
               id="newPassword"
               value={newPassword}
+              className={styles.formGroupInput}
               onChange={(e) => setNewPassword(e.target.value)}
               required
             />
@@ -67,11 +76,12 @@ const ChangePasswordPage = () => {
               type="password"
               id="confirmPassword"
               value={confirmPassword}
+              className={styles.formGroupInput}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
           </FormGroup>
-          <Button type="submit">변경</Button>
+          <Button type="submit">수정하기</Button>
         </form>
       </div>
     </div>

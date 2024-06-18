@@ -17,6 +17,7 @@ const EditProfilePage = () => {
   const user = useSelector((state) => state.user);
   const apiUrl = process.env.REACT_APP_API_URL;
   const [helperText, setHelperText] = useState("");
+  const [email] = useState(user.email);
   const [nickname, setNickname] = useState(user.nickname);
   const [isNicknameValid, setIsNicknameValid] = useState(true);
   const [profileImage, setProfileImage] = useState(
@@ -162,17 +163,17 @@ const EditProfilePage = () => {
   return (
     <div className={styles.pageContainer}>
       <div className={styles.editProfileContainer}>
-        <h2>프로필 수정</h2>
+        <h2 className={styles.pageHeader}>프로필 수정</h2>
         <form className={styles.editProfileForm}>
           <FormGroup label="프로필 사진" helperText="">
             <div
-              className={styles.profileImageContainer}
+              className={styles.profileEditContainer}
               onClick={handleProfileImageClick}
             >
               <img
                 src={profileImage}
                 alt="프로필 이미지"
-                className={styles.profileImage}
+                className={styles.profileAddBox}
               />
               <input
                 type="file"
@@ -183,6 +184,9 @@ const EditProfilePage = () => {
                 style={{ display: "none" }}
               />
             </div>
+          </FormGroup>
+          <FormGroup label="이메일">
+            <p>{email}</p>
           </FormGroup>
           <FormGroup label="닉네임" helperText={helperText}>
             <input
@@ -210,9 +214,9 @@ const EditProfilePage = () => {
           </p>
         </div>
         <div className={styles.backBtnBox}>
-          <Button className={styles.backBtn} onClick={() => navigate("/")}>
+          <button className={styles.backBtn} onClick={() => navigate("/")}>
             수정완료
-          </Button>
+          </button>
         </div>
       </div>
 

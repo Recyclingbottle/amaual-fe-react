@@ -16,12 +16,8 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const validate = async () => {
-      const syncErrors = validateLoginForm(values);
-      setErrors(syncErrors);
-    };
-
-    validate();
+    const syncErrors = validateLoginForm(values);
+    setErrors(syncErrors);
   }, [values]);
 
   const handleChange = (event) => {
@@ -78,7 +74,7 @@ const LoginPage = () => {
       <div className={styles.loginContainer}>
         <p className={styles.pageHeader}>로그인</p>
         <form onSubmit={handleFormSubmit} className={styles.loginForm}>
-          <FormGroup label="이메일">
+          <FormGroup label="이메일" helperText={errors.email}>
             <input
               type="email"
               id="email"
@@ -87,11 +83,8 @@ const LoginPage = () => {
               onChange={handleChange}
               value={values.email}
             />
-            {errors.email && (
-              <p className={styles.helperText}>{errors.email}</p>
-            )}
           </FormGroup>
-          <FormGroup label="비밀번호">
+          <FormGroup label="비밀번호" helperText={errors.password}>
             <input
               type="password"
               id="password"
@@ -100,16 +93,13 @@ const LoginPage = () => {
               onChange={handleChange}
               value={values.password}
             />
-            {errors.password && (
-              <p className={styles.helperText}>{errors.password}</p>
-            )}
           </FormGroup>
           <Button type="submit" disabled={isSubmitting}>
             로그인
           </Button>
         </form>
         <p className={styles.signupLink} onClick={() => navigate("/signup")}>
-          회원가입 하러 가기
+          회원가입
         </p>
       </div>
     </div>

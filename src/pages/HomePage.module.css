@@ -19,7 +19,7 @@
   text-align: center;
   margin: 40px;
 }
-.welcomeMessage span {
+.welcomeMessageSpan {
   font-weight: 700;
 }
 .postsContainer {

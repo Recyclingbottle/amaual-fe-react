@@ -1,0 +1,66 @@
+.postCard {
+  width: 600px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  margin: 16px 0;
+  padding: 16px;
+  transition: box-shadow 0.3s;
+}
+.postCard:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+.postMeta {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  color: black;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.views {
+  margin-left: 0px;
+  width: 90px;
+}
+.postDate {
+  margin-left: 200px;
+}
+.likes {
+  width: 70px;
+}
+.comments {
+  width: 65px;
+  margin-left: 5px;
+}
+
+.postTitle {
+  margin: 0;
+  font-weight: 600;
+  font-size: 18px;
+  color: #333333;
+}
+
+.authorInfo {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.authorProfilePicture {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+}
+
+.authorName {
+  font-weight: 500;
+}
+
+.postCard:hover .authorName {
+  text-decoration: underline;
+}

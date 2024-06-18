@@ -34,15 +34,21 @@ const HomePage = ({ data: posts }) => {
     <div className={styles.pageContainer}>
       <div className={styles.contentContainer}>
         <div className={styles.welcomeMessage}>
-          <p>
+          <p className={styles.welcomeMessage}>
             안녕하세요,
             <br />
-            아무 말 대잔치 <span>게시판</span>입니다.
+            아무 말 대잔치{" "}
+            <span className={styles.welcomeMessageSpan}>게시판</span>입니다.
           </p>
         </div>
         <div className={styles.postsContainer}>
           <div className={styles.buttonRightAlign}>
-            <Button onClick={handleCreatePostClick}>게시글 작성</Button>
+            <button
+              className={styles.postCreateBtn}
+              onClick={handleCreatePostClick}
+            >
+              게시글 작성
+            </button>
           </div>
           <div className={styles.postsContainer}>{renderPosts()}</div>
         </div>

@@ -8,8 +8,8 @@ const Modal = ({ isOpen, title, content, onCancel, onConfirm }) => {
   return (
     <div className={styles.modal}>
       <div className={styles.modalContent}>
-        <h2>{title}</h2>
-        <p>{content}</p>
+        <h2 className={styles.modalTitle}>{title}</h2>
+        <p className={styles.modalText}>{content}</p>
         <div className={styles.modalButtons}>
           <button className={styles.cancelButton} onClick={onCancel}>
             취소

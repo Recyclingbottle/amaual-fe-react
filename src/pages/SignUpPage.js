@@ -80,17 +80,37 @@ const SignUpPage = () => {
     setIsSubmitting(true);
 
     try {
+      // Upload the profile image first
       const formData = new FormData();
-      formData.append("email", values.email);
-      formData.append("password", values.password);
-      formData.append("nickname", values.nickname);
-      formData.append("profile_image", newProfileImageFile);
+      formData.append("image", newProfileImageFile);
 
-      const response = await axios.post(`${apiUrl}/users`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const uploadResponse = await axios.post(
+        `${apiUrl}/upload/profile`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
-      if (response.status === 201) {
+      const profileImageFilename = uploadResponse.data.filename;
+
+      // Proceed with the sign-up process using the uploaded profile image filename
+      const signUpData = {
+        email: values.email,
+        password: values.password,
+        nickname: values.nickname,
+        profile_image: profileImageFilename,
+      };
+
+      const signUpResponse = await axios.post(
+        `${apiUrl}/users/signup`,
+        signUpData,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (signUpResponse.status === 201) {
         alert("회원가입이 완료되었습니다.");
         navigate("/login");
       }
@@ -104,38 +124,41 @@ const SignUpPage = () => {
   return (
     <div className={styles.pageContainer}>
       <div className={styles.signUpContainer}>
-        <h2>회원가입</h2>
+        <h2 className={styles.pageHeader}>회원가입</h2>
         <form onSubmit={handleSignUp}>
           <FormGroup label="프로필 사진" helperText={profileImageHelperText}>
-            <div
-              className={styles.profileImageContainer}
-              onClick={handleProfileClick}
-            >
-              {profileImage ? (
-                <img
-                  src={profileImage}
-                  alt="프로필 이미지"
-                  className={styles.profileImage}
+            <div className={styles.pbox}>
+              <div
+                className={styles.profileAddBox}
+                onClick={handleProfileClick}
+              >
+                {profileImage ? (
+                  <img
+                    src={profileImage}
+                    alt="프로필 이미지"
+                    className={styles.profileImage}
+                  />
+                ) : (
+                  <img
+                    src={addIcon}
+                    alt="추가 아이콘"
+                    className={styles.addIcon}
+                  />
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className={styles.fileInput}
+                  style={{ display: "none" }}
                 />
-              ) : (
-                <img
-                  src={addIcon}
-                  alt="추가 아이콘"
-                  className={styles.addIcon}
-                />
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className={styles.fileInput}
-                style={{ display: "none" }}
-              />
+              </div>
             </div>
           </FormGroup>
           <FormGroup label="이메일*">
             <input
+              className={styles.formGroupInput}
               type="email"
               id="email"
               name="email"
@@ -149,6 +172,7 @@ const SignUpPage = () => {
           </FormGroup>
           <FormGroup label="비밀번호*">
             <input
+              className={styles.formGroupInput}
               type="password"
               id="password"
               name="password"
@@ -162,6 +186,7 @@ const SignUpPage = () => {
           </FormGroup>
           <FormGroup label="비밀번호 확인*">
             <input
+              className={styles.formGroupInput}
               type="password"
               id="confirmPassword"
               name="confirmPassword"
@@ -175,6 +200,7 @@ const SignUpPage = () => {
           </FormGroup>
           <FormGroup label="닉네임*">
             <input
+              className={styles.formGroupInput}
               type="text"
               id="nickname"
               name="nickname"
@@ -186,7 +212,11 @@ const SignUpPage = () => {
               <p className={styles.helperText}>{errors.nickname}</p>
             )}
           </FormGroup>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button
+            className={styles.signupButton}
+            type="submit"
+            disabled={isSubmitting}
+          >
             회원가입
           </Button>
         </form>

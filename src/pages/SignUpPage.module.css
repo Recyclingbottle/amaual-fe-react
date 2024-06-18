@@ -64,7 +64,12 @@
 .profileLabel {
   margin-bottom: 10px;
 }
-
+.pbox {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
 .profileAddBox {
   align-self: center;
   width: 149px;

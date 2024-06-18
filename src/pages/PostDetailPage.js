@@ -152,84 +152,116 @@ const PostDetailPage = () => {
   };
 
   return (
-    <div className={styles.pageContainer}>
-      {post && (
-        <div className={styles.postContent}>
-          <h2 className={styles.postTitle}>{post.title}</h2>
-          <div className={styles.postMeta}>
-            <span>작성자: {post.author_nickname}</span>
-            <span>작성일: {formatDate(post.created_at)}</span>
-          </div>
-          {post.image && (
-            <img
-              src={`${apiUrl}/images/posts/${post.image}`}
-              alt="게시글 이미지"
-              className={styles.postImage}
-            />
-          )}
-          <p className={styles.postBody}>{post.content}</p>
-          <Button className={styles.editButton} onClick={gotoEditPost}>
-            수정
-          </Button>
-          <Button className={styles.deleteButton} onClick={handleDelete}>
-            삭제
-          </Button>
-        </div>
-      )}
-      <div className={styles.postComments}>
-        <textarea
-          placeholder="댓글을 남겨주세요!"
-          className={styles.commentTextarea}
-          value={commentText}
-          onChange={(e) => setCommentText(e.target.value)}
-        ></textarea>
-        <div className={styles.commentsRegisterButtonContainer}>
-          <Button
-            className={styles.commentsRegisterButton}
-            onClick={handleCommentSubmit}
-          >
-            {isEditing ? "수정하기" : "댓글 등록"}
-          </Button>
-        </div>
-      </div>
-      {comments.map((comment) => (
-        <div key={comment.id} className={styles.commentContainer}>
-          <img
-            src={`${apiUrl}/images/profile/${comment.author_profile_image}`}
-            alt="댓글 작성자 프로필 사진"
-            className={styles.commentProfilePicture}
-          />
-          <div className={styles.commentContent}>
-            <div className={styles.commentTopRow}>
-              <span className={styles.commentAuthorName}>
-                {comment.author_nickname}
-              </span>
-              <span className={styles.commentDate}>
-                {formatDate(comment.created_at)}
-              </span>
-              <div className={styles.commentBtnContainer}>
-                <Button
-                  className={styles.editCommentBtn}
-                  data-comment-id={comment.id}
-                  onClick={() => handleEditComment(comment)}
-                >
-                  수정
-                </Button>
-                <Button
-                  className={styles.deleteCommentBtn}
-                  data-comment-id={comment.id}
-                  onClick={() => handleCommentDeleteClick(comment.id)}
-                >
-                  삭제
-                </Button>
+    <>
+      <div className={styles.contentContainer}>
+        {post && (
+          <>
+            <div className={styles.titleContainer}>
+              <h2 className={styles.postTitle}>{post.title}</h2>
+              <div className={styles.postAuthor}>
+                <img
+                  className={styles.profilePicture}
+                  src={`${apiUrl}/images/profile/${post.author_profile_image}`}
+                ></img>
+                <p className={styles.authorName}>{post.author_nickname}</p>
+                <span className={styles.postDate}>
+                  {formatDate(post.created_at)}
+                </span>
+                <div className={styles.postBtnContainer}>
+                  <button className={styles.editPostBtn} onClick={gotoEditPost}>
+                    수정
+                  </button>
+                  <button
+                    className={styles.deletePostBtn}
+                    onClick={handleDelete}
+                  >
+                    삭제
+                  </button>
+                </div>
               </div>
             </div>
-            <div className={styles.commentBody}>
-              <p>{comment.content}</p>
+            <div className={styles.postContent}>
+              <div className={styles.imgBox}>
+                {post.image && (
+                  <img
+                    className={styles.postImage}
+                    src={`${apiUrl}/images/posts/${post.image}`}
+                    alt="Post"
+                  />
+                )}
+              </div>
+              <p
+                className={styles.postText}
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+              <div className={styles.postInteraction}>
+                <button className={styles.viewCountBtn}>
+                  {post.view_count} <br />
+                  조회수
+                </button>
+                <button className={styles.commentCountBtn}>
+                  {post.comment_count} <br />
+                  댓글
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      ))}
+            <div className={styles.postComments}>
+              <textarea
+                placeholder="댓글을 남겨주세요!"
+                className={styles.commentTextarea}
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+              ></textarea>
+              <div className={styles.commentsRegisterButtonContainer}>
+                <button
+                  className={styles.commentsRegisterButton}
+                  onClick={handleCommentSubmit}
+                >
+                  {isEditing ? "수정하기" : "댓글 등록"}
+                </button>
+              </div>
+            </div>
+            {comments.map((comment) => (
+              <div key={comment.id} className={styles.commentContainer}>
+                <img
+                  src={`${apiUrl}/images/profile/${comment.author_profile_image}`}
+                  alt="댓글 작성자 프로필 사진"
+                  className={styles.commentProfilePicture}
+                />
+                <div className={styles.commentContent}>
+                  <div className={styles.commentTopRow}>
+                    <span className={styles.commentAuthorName}>
+                      {comment.author_nickname}
+                    </span>
+                    <span className={styles.commentDate}>
+                      {formatDate(comment.created_at)}
+                    </span>
+                    <div className={styles.commentBtnContainer}>
+                      <button
+                        className={styles.editCommentBtn}
+                        data-comment-id={comment.id}
+                        onClick={() => handleEditComment(comment)}
+                      >
+                        수정
+                      </button>
+                      <button
+                        className={styles.deleteCommentBtn}
+                        data-comment-id={comment.id}
+                        onClick={() => handleCommentDeleteClick(comment.id)}
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  </div>
+                  <div className={styles.commentBody}>
+                    <p>{comment.content}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
       <Modal
         isOpen={isModalOpen}
         title="삭제 확인"
@@ -237,7 +269,7 @@ const PostDetailPage = () => {
         onCancel={handleCancel}
         onConfirm={handleConfirm}
       />
-    </div>
+    </>
   );
 };
 

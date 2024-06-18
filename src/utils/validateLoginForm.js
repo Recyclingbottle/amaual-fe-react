@@ -1,10 +1,6 @@
-// src/utils/validateLoginForm.js
-
 const validateLoginForm = (values) => {
   const { email, password } = values;
   let errors = {};
-  let helperText = "";
-  let isValid = true;
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -12,34 +8,22 @@ const validateLoginForm = (values) => {
   };
 
   if (!email) {
-    helperText =
-      "*올바른 이메일 주소 형식을 입력해주세요. (예:example@example.com)";
     errors.email =
-      "*올바른 이메일 주소 형식을 입력해주세요. (예:example@example.com)";
-    isValid = false;
+      "*올바른 이메일 주소 형식을 입력해주세요. (예: example@example.com)";
   } else if (!validateEmail(email)) {
-    helperText =
-      "*올바른 이메일 주소 형식을 입력해주세요. (예:example@example.com)";
     errors.email =
-      "*올바른 이메일 주소 형식을 입력해주세요. (예:example@example.com)";
-    isValid = false;
+      "*올바른 이메일 주소 형식을 입력해주세요. (예: example@example.com)";
   }
 
   if (!password) {
-    helperText = "비밀번호를 입력해주세요";
-    errors.password = "비밀번호를 입력해주세요";
-    isValid = false;
+    errors.password = "*비밀번호를 입력해주세요.";
   } else if (password.length < 8) {
-    helperText = "비밀번호가 짧습니다";
-    errors.password = "비밀번호가 짧습니다";
-    isValid = false;
+    errors.password = "*비밀번호는 8자 이상이어야 합니다.";
   } else if (password.length > 20) {
-    helperText = "비밀번호가 너무 깁니다";
-    errors.password = "비밀번호가 너무 깁니다";
-    isValid = false;
+    errors.password = "*비밀번호는 20자 이하이어야 합니다.";
   }
 
-  return { errors, helperText, isValid };
+  return errors;
 };
 
 export default validateLoginForm;
